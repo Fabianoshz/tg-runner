@@ -2,14 +2,14 @@ package usecase
 
 import "github.com/fabianoshz/tg-runner/internal/entity"
 
-type ExecutionPlanner interface {
+type PlanExecutionInterface interface {
 	PlanExecution(string) bool
 }
 
-type ExecutionApplier interface {
-	ApplyExecution(entity.Changelist) bool
+type CalculateDependenciesInterface interface {
+	CalculateDependencies([]entity.Resource) [][]entity.Resource
 }
 
-type DependencyCalculator interface {
-	CalculateDependencies([]entity.Resource) []entity.Resource
+type LoadResourcesInterface interface {
+	LoadResources(string) []entity.Resource
 }

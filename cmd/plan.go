@@ -6,10 +6,10 @@ import (
 )
 
 type executionPlannerCmd struct {
-	executionPlanner usecase.ExecutionPlanner
+	executionPlanner usecase.PlanExecutionInterface
 }
 
-func newExecutionPlannerCmd(executionPlanner usecase.ExecutionPlanner) command {
+func newExecutionPlannerCmd(executionPlanner usecase.PlanExecutionInterface) command {
 	return &executionPlannerCmd{
 		executionPlanner: executionPlanner,
 	}

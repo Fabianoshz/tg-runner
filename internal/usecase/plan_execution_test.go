@@ -11,7 +11,7 @@ import (
 func TestPlanExecution(t *testing.T) {
 	mockPersistenceRepository := new(mocks.Persistence)
 
-	executionPlanner := NewExecutionPlannerService(mockPersistenceRepository)
+	executionPlanner := NewPlanExecutionService(mockPersistenceRepository)
 
 	type args struct {
 		changelist string

@@ -11,15 +11,17 @@ import (
 // TODO use terragrunt show to get output in json
 // TODO format the output in human readable way
 // TODO treat errors
-func (p ExecutionPlannerService) PlanExecution(changelist string) bool {
-	resources := LoadResources(changelist)
+func (p PlanExecutionService) PlanExecution(changelist string) bool {
+	resourcesService := NewLoadResourcesService()
+	resources := resourcesService.LoadResources(changelist)
 
 	// TODO check if requested resources are locked
 
 	lock := entity.AcquireLock()
 	defer lock.Release()
 
-	ordered := CalculateDependencies(resources)
+	dependencyCalcultorService := NewCalculateDependenciesService()
+	ordered := dependencyCalcultorService.CalculateDependencies(resources)
 
 	// TODO iterate over others to add "plan later"
 	for _, v := range ordered[0] {

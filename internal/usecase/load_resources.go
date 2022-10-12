@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func LoadResources(changelist string) []entity.Resource {
+func (r LoadResourcesService) LoadResources(changelist string) []entity.Resource {
 	var resources []entity.Resource
 
 	yamlFile, err := os.ReadFile(changelist)

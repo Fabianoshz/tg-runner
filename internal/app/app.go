@@ -6,13 +6,13 @@ import (
 )
 
 type App struct {
-	ExecutionPlanner usecase.ExecutionPlanner
+	ExecutionPlanner usecase.PlanExecutionInterface
 }
 
 func Start() (*App, error) {
 	persistenceRepository := repository.NewPersistenceClient()
 
-	executionPlanner := usecase.NewExecutionPlannerService(persistenceRepository)
+	executionPlanner := usecase.NewPlanExecutionService(persistenceRepository)
 
 	return &App{
 		ExecutionPlanner: executionPlanner,
