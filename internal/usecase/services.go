@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"github.com/fabianoshz/iflantis/internal/repository"
+	"github.com/fabianoshz/tg-runner/internal/repository"
 )
 
 type ExecutionPlannerService struct {

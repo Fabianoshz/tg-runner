@@ -3,19 +3,18 @@ package usecase
 import (
 	"testing"
 
-	"github.com/fabianoshz/iflantis/internal/entity"
-	"github.com/fabianoshz/iflantis/internal/repository/mocks"
+	"github.com/fabianoshz/tg-runner/internal/repository/mocks"
 	"github.com/go-playground/assert"
 	"github.com/google/uuid"
 )
 
 func TestPlanExecution(t *testing.T) {
-	mockProjectRepository := new(mocks.Persistence)
+	mockPersistenceRepository := new(mocks.Persistence)
 
-	executionPlanner := NewExecutionPlannerService(mockProjectRepository)
+	executionPlanner := NewExecutionPlannerService(mockPersistenceRepository)
 
 	type args struct {
-		changelist entity.Changelist
+		changelist string
 	}
 
 	tests := []struct {
@@ -27,21 +26,7 @@ func TestPlanExecution(t *testing.T) {
 		{
 			name: "Test basic plan",
 			args: args{
-				changelist: entity.Changelist{
-					Id: uuid.New(),
-					Resources: []entity.Resource{
-						{
-							ID:     "abc",
-							Path:   "internal/usecase/testdata/terragrunt/basic-terragrunt",
-							Action: entity.Plan,
-						},
-						{
-							ID:     "123",
-							Path:   "internal/usecase/testdata/terragrunt/basic-terragrunt-2",
-							Action: entity.Plan,
-						},
-					},
-				},
+				changelist: "testdata/changelist-plan.yaml",
 			},
 			want:         true,
 			expectdError: nil,
@@ -49,21 +34,7 @@ func TestPlanExecution(t *testing.T) {
 		{
 			name: "Test basic destroy plan",
 			args: args{
-				changelist: entity.Changelist{
-					Id: uuid.New(),
-					Resources: []entity.Resource{
-						{
-							ID:     "abc",
-							Path:   "internal/usecase/testdata/terragrunt/basic-terragrunt",
-							Action: entity.PlanDestroy,
-						},
-						{
-							ID:     "123",
-							Path:   "internal/usecase/testdata/terragrunt/basic-terragrunt-2",
-							Action: entity.PlanDestroy,
-						},
-					},
-				},
+				changelist: "testdata/changelist-destroy.yaml",
 			},
 			want:         true,
 			expectdError: nil,
@@ -73,9 +44,9 @@ func TestPlanExecution(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
-			for _, r := range tt.args.changelist.Resources {
-				mockProjectRepository.On("SavePlanfile", r.ID, "planfile", tt.args.changelist.Id, r.Path).Return(true)
-			}
+			// TODO read this directly from the yaml file
+			mockPersistenceRepository.On("SavePlanfile", uuid.New().String(), "planfile", uuid.New(), "internal/usecase/testdata/terragrunt/basic-terragrunt").Return(true)
+			mockPersistenceRepository.On("SavePlanfile", uuid.New().String(), "planfile", uuid.New(), "internal/usecase/testdata/terragrunt/basic-terragrunt-2").Return(true)
 
 			// when
 			got := executionPlanner.PlanExecution(tt.args.changelist)

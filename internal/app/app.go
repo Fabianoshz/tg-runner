@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/fabianoshz/iflantis/internal/repository"
-	"github.com/fabianoshz/iflantis/internal/usecase"
+	"github.com/fabianoshz/tg-runner/internal/repository"
+	"github.com/fabianoshz/tg-runner/internal/usecase"
 )
 
 type App struct {

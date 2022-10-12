@@ -37,13 +37,11 @@ func (a *S3) SavePlanfile(id string, planfile string, uuid uuid.UUID, path strin
 		Body:   bytes.NewReader(body),
 	}
 
-	out, err := client.PutObject(context.TODO(), input)
+	_, err := client.PutObject(context.TODO(), input)
 
 	if err != nil {
 		fmt.Println("Got an error: ", err)
 	}
-
-	fmt.Println(out)
 }
 
 func (a *S3) GetPlanfiles(uuid uuid.UUID) {

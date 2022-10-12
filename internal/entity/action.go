@@ -1,10 +1,10 @@
 package entity
 
-type Action int64
+type Action string
 
 const (
-	Apply Action = iota
-	Destroy
-	Plan
-	PlanDestroy
+	Apply       Action = "apply"
+	Destroy     Action = "destroy"
+	Plan        Action = "plan"
+	PlanDestroy Action = "plan-destroy"
 )

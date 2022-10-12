@@ -1,9 +1,9 @@
 package usecase
 
-import "github.com/fabianoshz/iflantis/internal/entity"
+import "github.com/fabianoshz/tg-runner/internal/entity"
 
 type ExecutionPlanner interface {
-	PlanExecution(entity.Changelist) bool
+	PlanExecution(string) bool
 }
 
 type ExecutionApplier interface {

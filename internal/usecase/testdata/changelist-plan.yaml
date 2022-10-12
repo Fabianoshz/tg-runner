@@ -1,0 +1,4 @@
+- path: "internal/usecase/testdata/terragrunt/basic-terragrunt"
+  action: "plan"
+- path: "internal/usecase/testdata/terragrunt/basic-terragrunt-2"
+  action: "plan"

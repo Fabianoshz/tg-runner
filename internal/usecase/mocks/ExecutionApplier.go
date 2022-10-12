@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	entity "github.com/fabianoshz/iflantis/internal/entity"
+	entity "github.com/fabianoshz/tg-runner/internal/entity"
 	mock "github.com/stretchr/testify/mock"
 )
 

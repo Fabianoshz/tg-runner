@@ -6,15 +6,17 @@
             "request": "launch",
             "mode": "auto",
             "program": "main.go",
-            "args": [],
+            "args": [
+                "plan"
+            ],
             "env": {
                 "DEV": "true",
                 "AWS_ENDPOINT": "http://localhost:4566",
                 "AWS_REGION": "us-east-1",
                 "AWS_ACCESS_KEY_ID": "test",
                 "AWS_SECRET_ACCESS_KEY": "test",
-                "S3_BUCKET": "iflantis-bucket",
-            }
+                "S3_BUCKET": "tg-runner-bucket",
+            },
         }
     ]
 }
