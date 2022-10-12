@@ -1,15 +1,15 @@
-package usecase
+package entity
 
 import (
 	"github.com/google/uuid"
 )
 
 type Lock struct {
-	id uuid.UUID
+	Id uuid.UUID
 }
 
 func AcquireLock() Lock {
-	l := Lock{id: uuid.New()}
+	l := Lock{Id: uuid.New()}
 
 	// TODO create lock logic
 

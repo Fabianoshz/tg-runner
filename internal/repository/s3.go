@@ -9,9 +9,17 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/google/uuid"
 )
 
-func SavePlanfile(id string, planfile string, path string) {
+type S3 struct {
+}
+
+func NewPersistenceClient() Persistence {
+	return &S3{}
+}
+
+func (a *S3) SavePlanfile(id string, planfile string, uuid uuid.UUID, path string) {
 	client := s3.NewFromConfig(getConfig(), func(o *s3.Options) {
 		if os.Getenv("DEV") == "true" {
 			o.UsePathStyle = true
@@ -25,18 +33,20 @@ func SavePlanfile(id string, planfile string, path string) {
 
 	input := &s3.PutObjectInput{
 		Bucket: aws.String(os.Getenv("S3_BUCKET")),
-		Key:    aws.String("plans/" + id),
+		Key:    aws.String("plans/" + uuid.String() + "/" + id + "/planfile"),
 		Body:   bytes.NewReader(body),
 	}
 
-	_, err := client.PutObject(context.TODO(), input)
+	out, err := client.PutObject(context.TODO(), input)
 
 	if err != nil {
 		fmt.Println("Got an error: ", err)
 	}
+
+	fmt.Println(out)
 }
 
-func GetPlanfile(id string, planfile string, path string) {
+func (a *S3) GetPlanfiles(uuid uuid.UUID) {
 	client := s3.NewFromConfig(getConfig(), func(o *s3.Options) {
 		if os.Getenv("DEV") == "true" {
 			o.UsePathStyle = true
@@ -45,7 +55,7 @@ func GetPlanfile(id string, planfile string, path string) {
 
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(os.Getenv("S3_BUCKET")),
-		Key:    aws.String("plans/" + id),
+		Key:    aws.String("/plans/" + uuid.String()),
 	}
 
 	_, err := client.GetObject(context.TODO(), input)
@@ -55,6 +65,7 @@ func GetPlanfile(id string, planfile string, path string) {
 	}
 }
 
+// TODO move this to internal/app/app.go
 func getConfig() aws.Config {
 	cfg, err := config.LoadDefaultConfig(
 		context.TODO(),

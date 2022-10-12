@@ -4,32 +4,14 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/fabianoshz/iflantis/internal/repository"
+	"github.com/fabianoshz/iflantis/internal/entity"
 )
-
-type Action int64
-
-const (
-	Apply Action = iota
-	Destroy
-	Plan
-	PlanDestroy
-)
-
-type Resource struct {
-	ID     string
-	Path   string
-	Action Action
-}
-
-type Changelist struct {
-	Resources []Resource
-}
 
 // TODO use terragrunt show to get output in json
 // TODO format the output in human readable way
-func PlanExecution(changelist Changelist) bool {
-	lock := AcquireLock()
+// TODO treat errors
+func (p ExecutionPlannerService) PlanExecution(changelist entity.Changelist) bool {
+	lock := entity.AcquireLock()
 	defer lock.Release()
 
 	resources := CalculateDependencies(changelist.Resources)
@@ -37,11 +19,11 @@ func PlanExecution(changelist Changelist) bool {
 	for _, v := range resources {
 		var command string
 
-		if v.Action == Plan {
+		if v.Action == entity.Plan {
 			command = "/usr/bin/terragrunt plan -out=planfile"
 		}
 
-		if v.Action == PlanDestroy {
+		if v.Action == entity.PlanDestroy {
 			command = "/usr/bin/terragrunt plan -destroy -out=planfile"
 		}
 
@@ -49,7 +31,7 @@ func PlanExecution(changelist Changelist) bool {
 		cmd.Dir = v.Path
 		out, err := cmd.Output()
 
-		repository.SavePlanfile(v.ID, "planfile", v.Path)
+		p.persistenceRepository.SavePlanfile(v.ID, "planfile", changelist.Id, v.Path)
 
 		if err != nil {
 			fmt.Println(err)

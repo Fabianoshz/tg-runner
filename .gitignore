@@ -1,4 +1,4 @@
 localstack/volume
 **.terraform**
 **tfstate**
-**planfile
+planfile
