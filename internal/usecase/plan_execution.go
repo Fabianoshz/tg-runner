@@ -23,30 +23,36 @@ func (p PlanExecutionService) PlanExecution(changelist string) bool {
 	dependencyCalcultorService := NewCalculateDependenciesService()
 	ordered := dependencyCalcultorService.CalculateDependencies(resources)
 
-	// TODO iterate over others to add "plan later"
-	for _, v := range ordered[0] {
-		var command string
+	for _, v := range ordered {
+		for i, v := range v {
+			if i == 0 {
+				var command string
 
-		if v.Action == entity.Plan {
-			command = "/usr/bin/terragrunt plan -out=planfile"
+				if v.Action == entity.Plan {
+					command = "/usr/bin/terragrunt plan -out=planfile"
+				}
+
+				if v.Action == entity.PlanDestroy {
+					command = "/usr/bin/terragrunt plan -destroy -out=planfile"
+				}
+
+				cmd := exec.Command("sh", "-c", command)
+				cmd.Dir = v.Path
+				out, err := cmd.Output()
+
+				// TODO use something better than uuid.New().String() for file ID, maybe nothing?
+				p.persistenceRepository.SavePlanfile(uuid.New().String(), "planfile", uuid.New(), v.Path)
+
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				fmt.Println(string(out))
+			} else {
+				// TODO Add "plan later" to the resources in this level
+			}
 		}
 
-		if v.Action == entity.PlanDestroy {
-			command = "/usr/bin/terragrunt plan -destroy -out=planfile"
-		}
-
-		cmd := exec.Command("sh", "-c", command)
-		cmd.Dir = v.Path
-		out, err := cmd.Output()
-
-		// TODO use something better than uuid.New().String() for file ID, maybe nothing?
-		p.persistenceRepository.SavePlanfile(uuid.New().String(), "planfile", uuid.New(), v.Path)
-
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		fmt.Println(string(out))
 	}
 
 	return true

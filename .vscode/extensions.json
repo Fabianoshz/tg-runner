@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "golang.go",
-        "4ops.terraform"
+        "4ops.terraform",
+        "Gruntfuggly.todo-tree"
     ]
 }

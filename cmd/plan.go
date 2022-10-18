@@ -18,11 +18,17 @@ func newExecutionPlannerCmd(executionPlanner usecase.PlanExecutionInterface) com
 func (p executionPlannerCmd) newCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "plan",
-		Short: "run plan",
+		Short: "Run an execution plan based on a changelist",
 		Run: func(cmd *cobra.Command, args []string) {
-			p.executionPlanner.PlanExecution("internal/usecase/testdata/changelist-plan.yaml")
+			changelistFile, _ := cmd.Flags().GetString("changelist")
+
+			if changelistFile != "" {
+				p.executionPlanner.PlanExecution(changelistFile)
+			}
 		},
 	}
+
+	cmd.PersistentFlags().String("changelist", "", "The changelist file you wish to generate a plan")
 
 	return cmd
 }
