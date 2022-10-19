@@ -13,10 +13,4 @@ func main() {
 
 	rootCoomand := cmd.NewCLIRootCommand(app)
 	rootCoomand.Execute()
-
-	// persistenceRepository := repository.NewPersistenceClient()
-
-	// executionPlanner := usecase.NewExecutionPlannerService(persistenceRepository)
-
-	// executionPlanner.PlanExecution("internal/usecase/testdata/changelist-plan.yaml")
 }

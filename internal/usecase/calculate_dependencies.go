@@ -1,62 +1,90 @@
 package usecase
 
 import (
-	"log"
+	"fmt"
+	"io/fs"
+	"os/exec"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"sync"
 
 	"github.com/fabianoshz/tg-runner/internal/entity"
-	"github.com/hashicorp/hcl/v2"
-	"github.com/hashicorp/hcl/v2/hclparse"
 )
 
-type Dependencies struct {
-	Dependencies []Dependency `hcl:"dependency,block"`
-}
+func (d CalculateDependenciesService) CalculateDependencies(resources []entity.Resource, rootdir string) [][]entity.Resource {
+	wg := new(sync.WaitGroup)
+	var dags = make(map[string][]string)
 
-type Dependency struct {
-	ConfigPath string `hcl:"config_path"`
-	Type       string `hcl:"type,label"`
-}
-
-var configSchema = &hcl.BodySchema{
-	Blocks: []hcl.BlockHeaderSchema{
-		{
-			Type:       "dependency",
-			LabelNames: []string{"dependency"},
-		},
-	},
-}
-
-var dependencySchema = &hcl.BodySchema{
-	Attributes: []hcl.AttributeSchema{
-		{
-			Name:     "config_path",
-			Required: true,
-		},
-	},
-}
-
-func (d CalculateDependenciesService) CalculateDependencies(resources []entity.Resource) [][]entity.Resource {
-	// TODO calculate dependencies of resources
-	// TODO order dependencies of resources
-
-	for _, v := range resources {
-		parser := hclparse.NewParser()
-		out, _ := parser.ParseHCLFile(v.Path + "/terragrunt.hcl")
-
-		content, _, _ := out.Body.PartialContent(configSchema)
-
-		for _, b := range content.Blocks {
-			content, _ := b.Body.Content(dependencySchema)
-			log.Printf("Configuration is %#v", content.Attributes["config_path"])
+	filepath.Walk(rootdir, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
 		}
 
-		// TODO resolve dependencies
-		// TODO resolve find_in_parent_folders()
+		if info.Mode().IsRegular() {
+			obj, err := regexp.Match(`(.*).hcl`, []byte(info.Name()))
+			if err != nil {
+				return err
+			}
+
+			if obj && string(info.Name()[0]) != "." {
+				fmt.Println("file path:", filepath.Dir(path))
+
+				wg.Add(1)
+				go getFileDependencies(filepath.Dir(path), dags, wg)
+			}
+		}
+
+		return nil
+	})
+
+	wg.Wait()
+
+	var orderExecution [][]string
+
+	for _, resource := range resources {
+		var visited []string
+		var groupOrder []string
+
+		groupOrder = groupFileDependencies(resource.Path, dags, visited, groupOrder)
+		orderExecution = append(orderExecution, groupOrder)
 	}
 
 	var ordered [][]entity.Resource
-
-	ordered = append(ordered, resources)
-
 	return ordered
+}
+
+// TODO use hclparser, doing this because I'm lazy.
+func getFileDependencies(path string, dags map[string][]string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	var command = "terragrunt graph-dependencies --terragrunt-non-interactive | grep \"" + path + "\" | awk '{print $3}' | cut -d '\"' -f2"
+
+	cmd := exec.Command("sh", "-c", command)
+	cmd.Dir = path
+	out, err := cmd.Output()
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for _, s := range strings.Split(string(out), "\n") {
+		if len(s) > 0 {
+			dags[path] = append(dags[path], s)
+		}
+	}
+}
+
+func groupFileDependencies(path string, dags map[string][]string, visited []string, groupOrder []string) []string {
+	// TODO return error if this node has been visited already
+	visited = append(visited, path)
+
+	for _, child := range dags[path] {
+		groupOrder = append(groupOrder, child)
+
+		groupFileDependencies(child, dags, visited, groupOrder)
+	}
+
+	groupOrder = append(groupOrder, path)
+	return groupOrder
 }

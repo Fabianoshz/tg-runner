@@ -21,7 +21,8 @@ func (p PlanExecutionService) PlanExecution(changelist string) bool {
 	defer lock.Release()
 
 	dependencyCalcultorService := NewCalculateDependenciesService()
-	ordered := dependencyCalcultorService.CalculateDependencies(resources)
+	// TODO get rootdir instead of hardcoding
+	ordered := dependencyCalcultorService.CalculateDependencies(resources, "/home/fabiano/Projects/Fabianoshz/tg-runner/internal/usecase/testdata/terragrunt")
 
 	for _, v := range ordered {
 		for i, v := range v {

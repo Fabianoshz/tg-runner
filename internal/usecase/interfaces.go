@@ -7,7 +7,7 @@ type PlanExecutionInterface interface {
 }
 
 type CalculateDependenciesInterface interface {
-	CalculateDependencies([]entity.Resource) [][]entity.Resource
+	CalculateDependencies([]entity.Resource, string) [][]entity.Resource
 }
 
 type LoadResourcesInterface interface {

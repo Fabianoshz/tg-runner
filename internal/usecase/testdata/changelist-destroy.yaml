@@ -1,4 +1,4 @@
-- path: "internal/usecase/testdata/terragrunt/basic-terragrunt"
+- path: "/home/fabiano/Projects/Fabianoshz/tg-runner/internal/usecase/testdata/terragrunt/basic-terragrunt"
   action: "destroy"
-- path: "internal/usecase/testdata/terragrunt/basic-terragrunt-2"
+- path: "/home/fabiano/Projects/Fabianoshz/tg-runner/internal/usecase/testdata/terragrunt/basic-terragrunt-2"
   action: "destroy"
