@@ -7,4 +7,6 @@ const (
 	Destroy     Action = "destroy"
 	Plan        Action = "plan"
 	PlanDestroy Action = "plan-destroy"
+	Wait        Action = "wait"
+	Undefined   Action = "undefined"
 )

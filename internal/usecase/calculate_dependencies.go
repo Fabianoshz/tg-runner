@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os/exec"
@@ -16,6 +17,7 @@ func (d CalculateDependenciesService) CalculateDependencies(resources []entity.R
 	wg := new(sync.WaitGroup)
 	var dags = make(map[string][]string)
 
+	// Look for all the .hcl files and get the dependencies.
 	filepath.Walk(rootdir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -40,21 +42,22 @@ func (d CalculateDependenciesService) CalculateDependencies(resources []entity.R
 
 	wg.Wait()
 
-	var orderExecution [][]string
+	var orderExecution [][]entity.Resource
 
 	for _, resource := range resources {
 		var visited []string
-		var groupOrder []string
+		var groupOrder []entity.Resource
 
-		groupOrder = groupFileDependencies(resource.Path, dags, visited, groupOrder)
+		groupOrder, _ = groupFileDependencies(resource.Path, dags, visited, groupOrder)
 		orderExecution = append(orderExecution, groupOrder)
 	}
 
-	var ordered [][]entity.Resource
-	return ordered
+	return orderExecution
 }
 
 // TODO use hclparser, doing this because I'm lazy.
+// terragrunt checks for circular dependency, which
+// is not fine for this, we need to have our own check.
 func getFileDependencies(path string, dags map[string][]string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -75,16 +78,41 @@ func getFileDependencies(path string, dags map[string][]string, wg *sync.WaitGro
 	}
 }
 
-func groupFileDependencies(path string, dags map[string][]string, visited []string, groupOrder []string) []string {
-	// TODO return error if this node has been visited already
-	visited = append(visited, path)
-
-	for _, child := range dags[path] {
-		groupOrder = append(groupOrder, child)
-
-		groupFileDependencies(child, dags, visited, groupOrder)
+func groupFileDependencies(path string, dags map[string][]string, visited []string, groupOrder []entity.Resource) ([]entity.Resource, error) {
+	// If we visited this node before in this group
+	// it means we've found a circular dependency.
+	for _, v := range visited {
+		if v == path {
+			// TODO return error
+			fmt.Println("Circular dependency detected.")
+			return groupOrder, errors.New("empty name")
+		}
 	}
 
-	groupOrder = append(groupOrder, path)
-	return groupOrder
+	visited = append(visited, path)
+
+	// Recursivly check the children until we reach the top.
+	// Children are processed before the parent because of this.
+	for _, child := range dags[path] {
+		groupOrder, _ = groupFileDependencies(child, dags, visited, groupOrder)
+	}
+
+	// We should only add a dependency that's not been
+	// added before.
+	add := true
+	for _, v := range groupOrder {
+		if v.Path == path {
+			add = false
+		}
+	}
+
+	if add {
+		var a entity.Resource
+		a.Action = entity.Undefined
+		a.Path = path
+
+		groupOrder = append(groupOrder, a)
+	}
+
+	return groupOrder, nil
 }

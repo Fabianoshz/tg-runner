@@ -2,3 +2,7 @@
   action: "plan"
 - path: "/home/fabiano/Projects/Fabianoshz/tg-runner/internal/usecase/testdata/terragrunt/basic-dependency-2"
   action: "plan"
+- path: "/home/fabiano/Projects/Fabianoshz/tg-runner/internal/usecase/testdata/terragrunt/basic-dependency-3"
+  action: "plan"
+- path: "/home/fabiano/Projects/Fabianoshz/tg-runner/internal/usecase/testdata/terragrunt/basic-dependency-4"
+  action: "plan"
